@@ -1,3 +1,28 @@
+// Custom error classes
+class ValidationError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.name = "ValidationError";
+    this.field = field;
+  }
+}
+
+class DivisionByZeroError extends Error {
+  constructor() {
+    super("Cannot divide by zero.");
+    this.name = "DivisionByZeroError";
+  }
+}
+
+class InvalidInputError extends Error {
+  constructor(field, value) {
+    super(`Invalid input in field "${field}": "${value}" is not a number.`);
+    this.name = "InvalidInputError";
+    this.field = field;
+    this.value = value;
+  }
+}
+
 let form = document.querySelector("form");
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -7,33 +32,27 @@ form.addEventListener("submit", (e) => {
   let operator = document.querySelector("#operator").value;
   //Step 3: Add error handling using try/catch/finally
   try {
-    // Validate that inputs are not empty
-    if (firstNum === "" || secondNum === "") {
-      throw new Error("Both fields must be filled in. ");
-    }
+    // handle first field is empty
+    if (firstNum === "")
+      throw new ValidationError("First field cannot be empty.", "first-num");
+    // handle second field is empty
+    if (secondNum === "")
+      throw new ValidationError("Second field cannot be empty.", "second-num");
+    // handle when either field is not a number
+    if (isNaN(firstNum) || isNaN(secondNum))
+      throw new InvalidInputError("a field", firstNum || secondNum);
+    // handle division by zero
+    if (operator === "/" && Number(secondNum) === 0)
+      throw new DivisionByZeroError();
 
-    // Validate that inputs are actually numbers
-    if (isNaN(firstNum) || isNaN(secondNum)) {
-      throw new Error("Inputs must be valid numbers.");
-    }
+    output.innerHTML = eval(`${firstNum} ${operator} ${secondNum}`);
 
-    // Validate division by zero
-    if (operator === "/" && Number(secondNum) === 0) {
-      throw new Error("Cannot divide by zero.");
-    }
-
-    let result = eval(`${firstNum} ${operator} ${secondNum}`);
-    output.innerHTML = result;
+    // catch error and display error message in output element
   } catch (e) {
-    console.error("Calculator error:", e.message);
-    output.innerHTML = `Error: ${e.message}`;
+    console.error(`[${e.name}] ${e.message}`);
+    output.innerHTML = `${e.name}: ${e.message}`;
   } finally {
-    console.log(
-      "Calculator finished. Inputs were:",
-      firstNum,
-      operator,
-      secondNum,
-    );
+    console.log("Calculator attempted:", firstNum, operator, secondNum);
   }
 });
 
@@ -44,28 +63,31 @@ let errorBtns = Array.from(document.querySelectorAll("#error-btns > button"));
 
 //Console Log (index 0)
 errorBtns[0].addEventListener("click", () => {
-  console.log("Console Log demo!", { name: "Thy", lab: "9" });
+  console.log("Console Log Demo!");
 });
 
 //Console Error (index 1)
 errorBtns[1].addEventListener("click", () => {
-  console.error("Console Error demo! Something went wrong here.");
+  console.error("Console Error Demo!");
 });
 
 //Console Count (index 2)
 errorBtns[2].addEventListener("click", () => {
-  console.count("Button click!");
+  console.count("Count Button");
 });
 
 //Console Warn (index 3)
 errorBtns[3].addEventListener("click", () => {
-  console.warn("Console Warn demo! This is a warning");
+  console.warn("Console Warn Button");
 });
 
 //Console Assert (index 4)
 errorBtns[4].addEventListener("click", () => {
-  console.assert(1 === 2, "Console Assert demo! This assertion is false"); //This shows error message
-  console.assert(1 === 1, "Console Assert demo! This assertion is true"); //This does not show anything
+  let num = 5;
+  console.assert(2 == num, {
+    number: 2,
+    errorMsg: "The number does not equal 3",
+  });
 });
 
 //Console Clear (index 5)
@@ -75,20 +97,17 @@ errorBtns[5].addEventListener("click", () => {
 
 //Console Dir (index 6)
 errorBtns[6].addEventListener("click", () => {
-  console.dir(document.querySelector("form"));
+  console.dir(errorBtns[6]);
 });
 
 // Console Dirxml (index 7)
 errorBtns[7].addEventListener("click", () => {
-  console.dirxml(document.querySelector("form"));
+  console.dirxml(errorBtns[7]);
 });
 
 // Console Group Start (index 8)
 errorBtns[8].addEventListener("click", () => {
-  console.group("Student Info Group");
-  console.log("Name: Thy");
-  console.log("Lab: 9");
-  console.log("Course: CSE 110");
+  console.group("console.group");
 });
 
 // Console Group End (index 9)
@@ -108,22 +127,25 @@ errorBtns[10].addEventListener("click", () => {
 
 // Start Timer (index 11)
 errorBtns[11].addEventListener("click", () => {
-  console.time("myTimer");
+  console.time("Timer Button");
   console.log("Timer started!");
 });
 
 // End Timer (index 12)
 errorBtns[12].addEventListener("click", () => {
-  console.timeEnd("myTimer");
+  console.timeEnd("Timer Button");
 });
 
 // Console Trace (index 13)
-errorBtns[13].addEventListener("click", () => {
-  function inner() {
-    console.trace("Console Trace demo — here's the call stack:");
+errorBtns[13].addEventListener("click", function handleBtnClick() {
+  function deep() {
+    function deeper() {
+      function deepest() {
+        console.trace();
+      }
+      deepest();
+    }
+    deeper();
   }
-  function outer() {
-    inner();
-  }
-  outer();
+  deep();
 });
