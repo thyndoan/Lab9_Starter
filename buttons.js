@@ -1,3 +1,11 @@
+//step5
+window.onerror = function (message, source, lineno, colno, error) {
+  console.log(`Global error caught!`);
+  console.log(`Message: ${message}`);
+  console.log(`Source: ${source}, Line: ${lineno}, Col: ${colno}`);
+  return true;
+};
+
 // Custom error classes
 class ValidationError extends Error {
   constructor(message, field) {
@@ -86,7 +94,7 @@ errorBtns[4].addEventListener("click", () => {
   let num = 5;
   console.assert(2 == num, {
     number: 2,
-    errorMsg: "The number does not equal 3",
+    errorMsg: "The number does not equal 2",
   });
 });
 
@@ -148,4 +156,10 @@ errorBtns[13].addEventListener("click", function handleBtnClick() {
     deeper();
   }
   deep();
+});
+
+// Trigger a Global Error (index 14)
+errorBtns[14].addEventListener("click", () => {
+  //we do this so that window.onerror can catch it
+  undefinedFunction();
 });
